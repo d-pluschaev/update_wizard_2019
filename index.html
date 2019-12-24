@@ -1,0 +1,443 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>UpdateWizard2019</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//fonts.googleapis.com/css?family=Open+Sans:400,700,400italic,300,600&subset=latin,cyrillic,cyrillic-ext,latin-ext"
+          rel="stylesheet" type="text/css">
+    <link href="uikit.css" rel="stylesheet">
+    <script src="src/az.js"></script>
+    <script src="src/az.dawg.js"></script>
+    <script src="src/az.morph.js"></script>
+    <script src="src/az.tokens.js"></script>
+    <style>
+        .token {
+            height: 18px;
+            max-width: 160px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+            display: inline-block;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin: 2px;
+            background: #ECECEC;
+            cursor: default;
+        }
+
+        /* Simple tokens */
+        .token-CYRIL, .token-WORD, .morph-ADJF {
+            background: #FFBFBF;
+        }
+
+        .token-LATIN, .token-MIXED, .morph-ADJS {
+            background: #FF8686;
+        }
+
+        .token-PUNCT, .morph-VERB {
+            background: #B1BEFF;
+        }
+
+        .token-NUMBER, .morph-NOUN {
+            background: #A1EF82;;
+        }
+
+        .token-SPACE {
+            background: #ECECEC;
+        }
+
+        .token-OTHER {
+            background: #9E9E9E;
+            color: #FFF;
+        }
+
+        .token-LINK, .morph-INFN {
+            background: #1E1AFF;
+            color: #FFF;
+        }
+
+        .token-EMAIL, .morph-PRTF {
+            background: #13B5DA;
+            color: #FFF;
+        }
+
+        .morph-PRTS {
+            background: #0784a0;
+            color: #FFF;
+        }
+
+        .token-HASHTAG, .morph-GRND {
+            background: #9C2FFF;
+            color: #FFF;
+        }
+
+        .token-MARKUP, .morph-NUMR {
+            background: #2D9812;
+            color: #FFF;
+        }
+
+        .token-TAG, .morph-PREP {
+            background: #F79F00;
+            color: #FFF;
+        }
+
+        .token-CONTENT, .morph-CONJ {
+            background: #BFBF00;
+            color: #FFF;
+        }
+
+        .morph-COMP {
+            background: #ce5974;
+            color: #FFF;
+        }
+
+        .morph-ADVB {
+            background: #64edd4;
+        }
+
+        .morph-NPRO {
+            background: #97de49;
+        }
+
+        .morph-PRED {
+            background: #a93f92;
+            color: #FFF;
+        }
+
+        .morph-PRCL {
+            background: #fbeb2b;
+        }
+
+        .morph-INTJ {
+            background: #ff7818;
+            color: #FFF;
+        }
+
+        .morph-LATN {
+            background: #333;
+            color: #FFF;
+        }
+
+        .parse > div {
+            background: #fafafa;
+            color: #666;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body style="padding: 20px">
+<div class="uk-grid uk-form">
+    <div class="uk-width-large-1-2">
+        <i>Устаревшая поговорка</i>
+
+        <i>примеры:</i>
+        <select id="sel" onclick="selectExample(this);">
+            <option></option>
+            <option>Долго не говорит - ум копит, а вымолвит - слушать нечего.</option>
+            <option>Коня на вожжах удержишь, а слова с языка не воротишь.</option>
+            <option>Красно поле пшеном, а беседа умом.</option>
+            <option>Кто говорит, тот сеет; кто слушает — собирает (пожинает).</option>
+            <option>Кто ясно мыслит, тот ясно излагает.</option>
+            <option>Песнь не околица, глупая речь не пословица.</option>
+            <option>Правдивое слово - как лекарство: горько, зато излечивает.</option>
+            <option>Сердце громче стонет, когда молчишь.</option>
+            <option>Что написано пером, не вырубишь топором.</option>
+            <option>Язык поит и кормит, и спину порет.</option>
+            <option>Видна печаль по ясным очам, а кручина — по белу лицу.</option>
+            <option>Волк и всякий год линяет, а нрав не переменяет.</option>
+            <option>Ему палец в рот не клади.</option>
+            <option>Кудри завивай, да про дело не забывай.</option>
+            <option>Норов не боров — откормя, его не убить.</option>
+            <option>Умный не тот, кто много говорит, а тот, кто много знает.</option>
+            <option>Берегись козла спереди, коня сзади, а лихого человека — со всех сторон.</option>
+        </select>
+        <textarea id="text" class="pure-input-1" style="font-size:180%;height: 50px; width: 100%"
+                  placeholder="Текст для разбора">
+        </textarea>
+
+    </div>
+
+    <br>
+    <br>
+    <i>Обновлённая поговока версии 2019 года</i>
+    <hr>
+    <div id="altResults" style="font-size: 150%"></div>
+    <hr>
+
+
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <div class="uk-width-large-1-2" style="display: none">
+        <h5 id="resultsHeader">Результат морфологического разбора</h5>
+        <div id="tokensResults"></div>
+    </div>
+</div>
+
+
+<script>
+    Az.Morph.init('dicts', function(err, Morph) {
+        document.getElementById('text').addEventListener('keyup', tokenize, false);
+        selectExample(document.getElementById('sel'));
+        tokenize();
+    });
+
+    var types = ['SPACE', 'WORD', 'NUMBER', 'PUNCT', 'LINK', 'EMAIL', 'HASHTAG', 'MARKUP', 'TAG', 'CONTENT', 'OTHER'].map(function(type) {
+        return Az.Tokens[type];
+    });
+    var html, tokens = [], timeSt, timeEn;
+
+    function update() {
+        nounPool = {};
+        verbPool = {};
+
+        var incl = [];
+        for (var i = 0; i < types.length; i++) {
+            if (!document.getElementById('filter-' + types[i]) || document.getElementById('filter-' + types[i]).checked) {
+                incl.push(types[i]);
+            }
+        }
+        if (incl.indexOf(Az.Tokens.CYRIL) > -1 || incl.indexOf(Az.Tokens.LATIN) > -1) {
+            incl.push(Az.Tokens.WORD);
+        }
+        var filtered = tokens.done(incl, false);
+
+
+        var altText = '';
+        html = filtered.map(function(token, i) {
+            var safe = token.toString().split('&').join('&amp;').split('<').join('&lt;').split(' ').join('&nbsp;').split('\n').join('↵');
+            var alt;
+            if (token.type === Az.Tokens.WORD) {
+                var parses = Az.Morph(token.toString());
+                if (parses.length) {
+                    if (parses[0].tag.VERB) {
+                        alt = getVerb(parses[0]);
+                    } else if (parses[0].tag.NOUN) {
+                        alt = getNoun(parses[0]);
+                    }
+                }
+
+                if (!alt) {
+                    alt = safe;
+                }
+                altText += alt;
+
+                return '<span class="token' + (parses.length ? ' morph-' + parses[0].tag.POST + '" title="' + parses[0].tag.toString() : '') + '" onclick="morph(\'' + token.toString().split('\'').join('\\\'') + '\');" style="cursor: pointer">' + safe + '</span>';
+            }
+            altText += safe;
+
+            return '<span class="token token-SPACE" title="' + token.type + (token.subType ? ', ' + token.subType : '') + '">' + safe + '</span>';
+        });
+
+        document.getElementById('tokensResults').innerHTML = html.join('');
+        document.getElementById('altResults').innerHTML = altText;
+    }
+
+    function tokenize() {
+        timeSt = (new Date()).getTime();
+        tokens = Az.Tokens(document.getElementById('text').value, {
+            html: true,
+            wiki: true,
+            markdown: true
+        });
+        timeEn = (new Date()).getTime();
+
+        update();
+    }
+
+    var nounPool = {};
+    var verbPool = {};
+
+    function getNoun(token) {
+        var anim = token.tag.ANim + '-' + token.tag.CAse + '-' + token.tag.NMbr;
+        let nouns = {
+            "inan-gent-sing": [
+                "Валеры",
+                "оленя",
+                "айфона",
+                "собаки",
+                "соседа",
+                "булки",
+                "сатаны",
+                "семки",
+                "Сталина",
+                "Интетикса",
+                "мозгов",
+            ],
+            "inan-nomn-sing": [
+                "Валера",
+                "олень",
+                "айфон",
+                "собака",
+                "сосед",
+                "булка",
+                "сатана",
+                "опричник",
+                "семка",
+                "незалежная",
+                "Сталин",
+                "Интетикс",
+                "мозг",
+            ],
+            "inan-nomn-plur": [
+                "Валеры",
+                "олени",
+                "айфоны",
+                "собаки",
+                "соседи",
+                "булки",
+                "демоны",
+                "комрады",
+                "семки",
+                "незалежные",
+                "Сталины",
+                "Интетиксы",
+                "мозги",
+            ],
+            "inan-accs-sing": [
+                "Валеру",
+                "оленя",
+                "айфончик",
+                "собаку",
+                "соседа",
+                "булки",
+                "страну",
+                "братана",
+                "семки",
+                "незалежную",
+                "Сталина",
+                "Интетикса",
+                "мозг",
+            ],
+            "inan-accs-plur": [
+                "Валер",
+                "оленей",
+                "айфонов",
+                "собак",
+                "соседей",
+                "булок",
+                "стран",
+                "братанов",
+                "семок",
+                "незалежных",
+                "Сталинов",
+                "Интетиксов",
+                "мозгов",
+            ],
+            "inan-datv-sing": [
+                "Валере",
+                "оленю",
+                "айфончику",
+                "козлу",
+                "соседу",
+                "батону",
+                "государству",
+                "братану",
+                "карману",
+                "патриотизму",
+                "Сталину",
+                "Интетиксу",
+                "мозгам",
+            ],
+        };
+
+        nouns['anim-gent-sing'] = nouns['inan-gent-sing'];
+        nouns['anim-nomn-sing'] = nouns['inan-nomn-sing'];
+
+        let nounGroup = nouns[anim];
+
+        var word = token.word;
+        if (nounGroup) {
+            word = rand(nounGroup, nounPool, word);
+        }
+
+        console.log(word + ' = ' + anim);
+
+        return word;
+    }
+
+    function getVerb(token) {
+        var anim = token.tag.TEns + '-' + token.tag.PErs + '-' + token.tag.NMbr;
+        const verbs = {
+            "futr-2per-sing": [
+                'заселфишь',
+                'скипанёшь',
+                'свайпнешь',
+                'чекнешь',
+                'наклонишь',
+                'тормознёшь',
+                'натянешь',
+                'отвянешь',
+            ],
+            "pres-3per-plur": [
+                'очкуют',
+                'скипают',
+                'чекают',
+                'наклоняют',
+                'тормозят',
+                'опусают',
+                'натягивают',
+            ],
+            "pres-3per-sing": [
+                'ссыт',
+                'очкует',
+                'дрейфит',
+                'передёргивает',
+                'натягивает',
+                'опускает',
+                'офигевает',
+                'шокирует',
+                'деморализует',
+                'мотивирует',
+            ]
+        };
+
+        var word = token.word;
+        let verbGroup = verbs[anim];
+        if (verbGroup) {
+            word = rand(verbGroup, verbPool, word);
+        }
+
+        console.log(word + ' = ' + anim);
+        console.log(token);
+
+        return word;
+    }
+
+    function rand(arr, pool, word) {
+
+        var l, k, s, c = 0;
+
+        if (Math.random() < 0.4) {
+            return word;
+        }
+
+        while (c < 5) {
+            l = arr.length;
+            k = Math.floor(Math.random() * l);
+            s = arr[k];
+            c++;
+            if (!pool[s]) {
+                break;
+            }
+        }
+
+        pool[s] = true;
+
+        return s;
+    }
+
+
+    function selectExample(e) {
+        document.getElementById('text').innerHTML = e.options[e.selectedIndex].text;
+        tokenize();
+    }
+</script>
+</body>
+</html>
